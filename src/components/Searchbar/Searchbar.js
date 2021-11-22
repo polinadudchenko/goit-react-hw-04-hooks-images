@@ -1,47 +1,35 @@
 import PropTypes from 'prop-types'
-import { Component } from 'react'
 import { toast } from 'react-toastify';
+import { useState } from 'react';
 import {StyledSearchbar, StyledSearchForm, StyledSearchBtn, StyledSearchBtnLabel, StyledSearchInput} from './Searchbar.styled'
 
-class Searchbar extends Component {
-
-  static propTypes = {
-    onSubmit: PropTypes.func.isRequired,
+export default function Searchbar ({onSubmit}) {
+  const [input, setInput] = useState('');
+ 
+  const handleChange = (e) => {
+    setInput(e.currentTarget.value)
   }
 
-  state = {
-    input: '',
-
-  }
-
-  handleChange = (e) => {
-    this.setState({input: e.currentTarget.value})
-  }
-
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    const { input } = this.state;
     if (input.trim() === '') {
       toast.info('Please type a query')
       return
     }
 
-    this.props.onSubmit(input);
-    this.setState({input: ''})
-
+    onSubmit(input);
+    setInput('')
   }
 
-  render() {
-    const { input } = this.state;
-    return <StyledSearchbar>
-    <StyledSearchForm onSubmit={this.handleSubmit}>
+  return <StyledSearchbar>
+    <StyledSearchForm onSubmit={handleSubmit}>
       <StyledSearchBtn type="submit">
         <StyledSearchBtnLabel>Search</StyledSearchBtnLabel>
       </StyledSearchBtn>
 
         <StyledSearchInput
           type="text"
-          onChange={this.handleChange}
+          onChange={handleChange}
           value={input}
         autoComplete="off"
         autoFocus
@@ -49,7 +37,8 @@ class Searchbar extends Component {
         />
     </StyledSearchForm>
   </StyledSearchbar>
-  }
 }
 
-export default Searchbar
+Searchbar.propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+  }
