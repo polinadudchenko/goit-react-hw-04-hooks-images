@@ -22,7 +22,6 @@ export default function App () {
   const [modalImg, setModalImg] = useState('');
   const [showModal, setShowNodal] = useState(false);
   const [images, setImages] = useState([]);
-  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState(Status.IDLE);
 
@@ -45,7 +44,6 @@ export default function App () {
         behavior: 'smooth',
       });
     }).catch(error => {
-      setError(error);
       setStatus(Status.REJECTED)
       toast.error(error)
     })
@@ -79,7 +77,7 @@ export default function App () {
       <Searchbar onSubmit={handleSubmit} />
       {(status === Status.PENDING && query)&& <Loader />}
       {status === Status.RESOLVED &&
-        <ImageGallery images={images}  onHandleModal={handleModal} onHandleLoadBtn={handleLoadButton} />
+        <ImageGallery images={images} onHandleModal={handleModal} onHandleLoadBtn={handleLoadButton} />
       }
       {showModal && <Modal onClose={toggleModal}><StyledModalImg src={modalImg} alt={query} /></Modal>}
       <ToastContainer autoClose={3000}/>
