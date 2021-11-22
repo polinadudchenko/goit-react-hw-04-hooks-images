@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import fetchApi from './sevicies/fetch-api';
 import mapper from './sevicies/mapper';
@@ -17,111 +17,71 @@ const Status = {
   REJECTED: 'rejected',
 };
 
-class App extends Component {
+export default function App () {
+  const [query, setQuery] = useState('');
+  const [modalImg, setModalImg] = useState('');
+  const [showModal, setShowNodal] = useState(false);
+  const [images, setImages] = useState([]);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState(Status.IDLE);
 
-  state = {
-    query: '',
-    modalImg: '',
-    showModal: false,
-    images: [],
-    error: null,
-    page: 1,
-    status: Status.IDLE,
-  }
+  useEffect(() => {
+    setStatus(Status.PENDING);
+    fetchImage();
+  }, [query] )  
   
-  componentDidUpdate(prevProps, prevState) {
-    const prevQuery = prevState.query;
-    const nextQuery = this.state.query;
-    
-    if (prevQuery !== nextQuery) {
-      this.setState({ status: Status.PENDING })
-      this.fetchImage();
-    }    
-  }
-
-  fetchImage = () => {
-    const { query, page } = this.state;
-
+  const fetchImage = () => {
+    if (query === '') {
+      return
+    }
     fetchApi(query, page).then(response => {
-        const newImages = mapper(response.hits);
-        this.setState(prevState => (
-          { images: [...prevState.images, ...newImages], status: Status.RESOLVED, page: prevState.page + 1,}
-        ))
-        window.scrollTo({
+      const newImages = mapper(response.hits);
+      setImages(images => [...images, ...newImages]);
+      setStatus(Status.RESOLVED);
+      setPage(page => page + 1)
+      window.scrollTo({
         top: document.documentElement.scrollHeight,
         behavior: 'smooth',
-    });
+      });
     }).catch(error => {
-        this.setState({ error, status: Status.REJECTED })
-        toast.error(error)
+      setError(error);
+      setStatus(Status.REJECTED)
+      toast.error(error)
     })
   }
 
-  handleSubmit = (query) => {
-    this.setState({query, page: 1, images: []})
+  const handleSubmit = (query) => {
+    setQuery(query);
+    setPage(1);
+    setImages([]);
   }
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }))
+  const toggleModal = () => {
+    setShowNodal(showModal => !showModal)
   }
 
-  openModal = (modalImg) => {
-    this.setState({modalImg})
+  const openModal = (modalImg) => {
+    setModalImg(modalImg)
   }
 
-  handleLoadButton = () => {
-    this.fetchImage()
+  const handleLoadButton = () => {
+    fetchImage()
   }
   
-  handleModal = (e) => {
-    this.openModal(e.target.dataset.modal);
-    this.toggleModal();
+  const handleModal = (e) => {
+    openModal(e.target.dataset.modal);
+    toggleModal();
   }
 
 
-  render() {
-    const { query, showModal, modalImg, images, error, status } = this.state;
-    return <StyledApp>
-      <Searchbar onSubmit={this.handleSubmit} />
-      {status === Status.PENDING && <Loader />}
+  return <StyledApp>
+      <Searchbar onSubmit={handleSubmit} />
+      {(status === Status.PENDING && query)&& <Loader />}
       {status === Status.RESOLVED &&
-        <ImageGallery images={images} error={error} status={status} onHandleModal={this.handleModal} onHandleLoadBtn={this.handleLoadButton} />
+        <ImageGallery images={images}  onHandleModal={handleModal} onHandleLoadBtn={handleLoadButton} />
       }
-      {showModal && <Modal onClose={this.toggleModal}><StyledModalImg src={modalImg} alt={query} /></Modal>}
+      {showModal && <Modal onClose={toggleModal}><StyledModalImg src={modalImg} alt={query} /></Modal>}
       <ToastContainer autoClose={3000}/>
     </StyledApp> 
-  }
 }
-
-export default App;
-
-
-/* fetchImg = () => {
-        const { currentPage, searchQuery } = this.state;
-        const options = { searchQuery, currentPage };
-
-        if (!searchQuery) {
-            return;
-        }
-
-        this.setState({ isLoading: true });
-
-        ImageApi.fetchImg(options)
-            .then(hits => {
-                this.setState(prevState => ({
-                    images: [...prevState.images, ...hits],
-                    currentPage: prevState.currentPage + 1,
-                }));
-
-                window.scrollTo({
-                    top: document.documentElement.scrollHeight,
-                    behavior: 'smooth',
-                });
-            })
-            .catch(error => this.setState({ error }))
-            .finally(() => {
-                this.setState({ isLoading: false });
-            });
-    }; */
