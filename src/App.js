@@ -59,16 +59,12 @@ export default function App () {
     setShowNodal(showModal => !showModal)
   }
 
-  const openModal = (modalImg) => {
-    setModalImg(modalImg)
-  }
-
   const handleLoadButton = () => {
     fetchImage()
   }
   
   const handleModal = (e) => {
-    openModal(e.target.dataset.modal);
+    setModalImg(e.target.dataset.modal);
     toggleModal();
   }
 
