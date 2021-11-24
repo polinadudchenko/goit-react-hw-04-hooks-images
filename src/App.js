@@ -74,21 +74,17 @@ export default function App () {
 
 
   return <StyledApp>
-      <Searchbar onSubmit={handleSubmit} />
-    {status === Status.RESOLVED &&
-      <>
-      <ImageGallery images={images} onHandleModal={handleModal} onHandleLoadBtn={fetchImage} />
-      <Button loadMoreImages={handleLoadButton} />
-      </>
-      }
+    <Searchbar onSubmit={handleSubmit} />
+    <ImageGallery images={images} onHandleModal={handleModal} onHandleLoadBtn={fetchImage} />
+      {status === Status.RESOLVED && <Button loadMoreImages={handleLoadButton} />}
       {status === Status.PENDING && <Loader
         type="ThreeDots"
         color="#3f51b5"
         height={100}
         width={100}
-      timeout={3000}
-      style={{ textAlign: 'center' }} 
-    />}    
+        timeout={3000}
+        style={{ textAlign: 'center' }} 
+      />}    
       {showModal && <Modal onClose={toggleModal}><StyledModalImg src={modalImg} alt={query} /></Modal>}
       <ToastContainer autoClose={3000}/>
     </StyledApp> 
