@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import ImageGalleryItem from '../ImageGalleryItem';
 import { StyledGallery } from './ImageGallery.styled';
-import Button from '../Button';
+
 
 
 function ImageGallery({images, onHandleLoadBtn, onHandleModal}) {
@@ -10,7 +10,6 @@ function ImageGallery({images, onHandleLoadBtn, onHandleModal}) {
     <StyledGallery>
         <ImageGalleryItem images={images} onImgClick={ onHandleModal}/>
     </StyledGallery>
-    <Button loadMoreImages={onHandleLoadBtn} />
     </>
 }
 

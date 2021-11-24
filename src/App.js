@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback} from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import fetchApi from './sevicies/fetch-api';
 import mapper from './sevicies/mapper';
 import {StyledApp, StyledModalImg} from './App.styled';
 import ImageGallery from './components/ImageGallery';
+import Button from './components/Button';
 import Searchbar from './components/Searchbar';
 import Modal from './components/Modal';
-import Loader from './components/Loader';
 import 'react-toastify/dist/ReactToastify.css';
 import '../node_modules/react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import Loader from "react-loader-spinner";
+import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 
 const Status = {
   IDLE: 'idle',
@@ -25,34 +27,35 @@ export default function App () {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState(Status.IDLE);
 
-  useEffect(() => {
-    setStatus(Status.PENDING);
-    fetchImage();
-  }, [query] )  
-  
-  const fetchImage = () => {
+  const fetchImage = useCallback(() => {
     if (query === '') {
       return
     }
-    fetchApi(query, page).then(response => {
-      const newImages = mapper(response.hits);
-      setImages(images => [...images, ...newImages]);
-      setStatus(Status.RESOLVED);
-      setPage(page => page + 1)
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
-    }).catch(error => {
-      setStatus(Status.REJECTED)
-      toast.error(error)
-    })
-  }
+      fetchApi(query, page).then(response => {
+        const newImages = mapper(response.hits);
+        setImages(images => [...images, ...newImages]);
+        setStatus(Status.RESOLVED);
+      }).then(() => {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth',
+        })
+      }).catch(error => {
+        setStatus(Status.REJECTED)
+        toast.error(error)
+      })
+  }, [query, page])
+
+  useEffect(() => {
+    fetchImage()
+    
+  }, [fetchImage])
 
   const handleSubmit = (query) => {
     setQuery(query);
     setPage(1);
     setImages([]);
+    setStatus(Status.PENDING);
   }
 
   const toggleModal = () => {
@@ -60,7 +63,8 @@ export default function App () {
   }
 
   const handleLoadButton = () => {
-    fetchImage()
+    setPage(page => page + 1)
+    setStatus(Status.PENDING)
   }
   
   const handleModal = (e) => {
@@ -71,10 +75,20 @@ export default function App () {
 
   return <StyledApp>
       <Searchbar onSubmit={handleSubmit} />
-      {(status === Status.PENDING && query)&& <Loader />}
-      {status === Status.RESOLVED &&
-        <ImageGallery images={images} onHandleModal={handleModal} onHandleLoadBtn={handleLoadButton} />
+    {status === Status.RESOLVED &&
+      <>
+      <ImageGallery images={images} onHandleModal={handleModal} onHandleLoadBtn={fetchImage} />
+      <Button loadMoreImages={handleLoadButton} />
+      </>
       }
+      {status === Status.PENDING && <Loader
+        type="ThreeDots"
+        color="#3f51b5"
+        height={100}
+        width={100}
+      timeout={3000}
+      style={{ textAlign: 'center' }} 
+    />}    
       {showModal && <Modal onClose={toggleModal}><StyledModalImg src={modalImg} alt={query} /></Modal>}
       <ToastContainer autoClose={3000}/>
     </StyledApp> 
